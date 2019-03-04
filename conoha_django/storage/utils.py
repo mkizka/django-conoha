@@ -22,3 +22,8 @@ def get_container_and_filename(name):
     if len(splited_name) == 1:
         return name, ''
     return splited_name[0], '/'.join(splited_name[1:])
+
+
+def is_container(name):
+    container, filename = get_container_and_filename(name)
+    return filename == ''

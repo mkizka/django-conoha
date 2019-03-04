@@ -1,5 +1,3 @@
-import json
-
 import requests
 
 from .utils import load_credentials, get_container_and_filename
@@ -21,15 +19,31 @@ class ObjectStorageApi:
         try:
             return response.json()
         except:
-            raise Exception
+            raise Exception(f'{str(response.status_code)}: {response.text}')
 
     def get(self, name):
         return self._request('get', f'{self.endpoint}/{name}')
 
-    def create(self, name, f=None):
+    def put(self, name, f=None):
         return self._request('put', f'{self.endpoint}/{name}', data=f)
 
-    def _get_container_or_file_info(self, name):
+    def delete(self, name):
+        return self._request('delete', f'{self.endpoint}/{name}')
+
+    def get_dir_info(self, name):
+        """
+        nameに対応するファイルが存在するコンテナの情報か、空白なら全コンテナを返す
+        """
+        if name == '':
+            return self.get('')
+
+        container, filename = get_container_and_filename(name)
+        return self.get(container)
+
+    def get_path_info(self, name):
+        """
+        nameに対応するファイルもしくはコンテナの情報を返す
+        """
         container, filename = get_container_and_filename(name)
 
         if filename:
@@ -44,7 +58,7 @@ class ObjectStorageApi:
                 return obj
 
     def exists(self, name):
-        return self._get_container_or_file_info(name) is not None
+        return self.get_path_info(name) is not None
 
     def info(self, name, k):
-        return self._get_container_or_file_info(name)[k]
+        return self.get_path_info(name)[k]
