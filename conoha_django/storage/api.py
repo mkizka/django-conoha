@@ -1,10 +1,8 @@
 import json
-from pathlib import Path
 
 import requests
-from django.core import files
 
-from ..utils import load_credentials
+from .utils import load_credentials, get_container_and_filename
 
 
 class ObjectStorageApi:
@@ -22,30 +20,31 @@ class ObjectStorageApi:
         response = requests.request(method, url, headers=headers, **kwargs)
         try:
             return response.json()
-        except json.decoder.JSONDecodeError:
-            return response
+        except:
+            raise Exception
 
-    def _get_containers(self):
-        return self._request('get', self.endpoint)
+    def get(self, name):
+        return self._request('get', f'{self.endpoint}/{name}')
 
-    def container(self, name):
-        self._request('put', f'{self.endpoint}/{name}')
-        return ObjectStorageContainer(name)
+    def create(self, name, f=None):
+        return self._request('put', f'{self.endpoint}/{name}', data=f)
 
+    def _get_container_or_file_info(self, name):
+        container, filename = get_container_and_filename(name)
 
-class ObjectStorageContainer(ObjectStorageApi):
-    def __init__(self, name):
-        super().__init__()
-        self.endpoint += f'/{name}'
+        if filename:
+            data = self.get(container)
+            target = filename
+        else:
+            data = self.get('')
+            target = container
 
-    def container(self, name):
-        raise Exception
+        for obj in data:
+            if obj['name'] == target:
+                return obj
 
-    def upload(self, filepath, filename=None):
-        filename = Path(filepath).name if filename is None else filepath
-        with open(filepath, 'rb') as f:
-            self._request('put', f'{self.endpoint}/{filename}', data=f)
+    def exists(self, name):
+        return self._get_container_or_file_info(name) is not None
 
-
-class ObjectStorageFile(files.File):
-    pass
+    def info(self, name, k):
+        return self._get_container_or_file_info(name)[k]
