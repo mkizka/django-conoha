@@ -13,10 +13,20 @@ def json_load(filepath, **kwargs):
         return json.load(f)
 
 
+class ConohaSettingsNotFoundException(Exception):
+    pass
+
+
 def load_credentials():
     access_file_path = load_settings('CONOHA_ACCESS_FILE_PATH')
+
     if access_file_path is None:
-        return load_settings('CONOHA_TENANT_ID'), load_settings('CONOHA_ACCESS_TOKEN_ID')
+        tenant_id = load_settings('CONOHA_TENANT_ID')
+        access_token_id = load_settings('CONOHA_ACCESS_TOKEN_ID')
+
+        if tenant_id is None or access_token_id is None:
+            raise ConohaSettingsNotFoundException
+        return tenant_id, access_token_id
 
     access_token = json_load(access_file_path)['access']['token']
     return access_token['tenant']['id'], access_token['id']
