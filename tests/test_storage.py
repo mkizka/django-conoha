@@ -1,11 +1,9 @@
-import io
 import uuid
 
 import django
 from django.core.files import File
 from django.test import TestCase
 import requests
-from requests.exceptions import HTTPError
 
 from conoha.storage.backend import ConohaObjectStorage
 
@@ -33,15 +31,6 @@ class ConohaObjectStorageTests(TestCase):
         self.storage.delete(filename)
         print('delete: ' + filename)
 
-        content.close()
-
-    def test_save_to_not_found_directory(self):
-        filename = f'not-found-directory/new.txt'
-        content = open('tests/test.txt')
-        self.assertRaises(
-            HTTPError,
-            lambda: self.storage._save(filename, File(content.buffer))
-        )
         content.close()
 
     def test_url(self):
