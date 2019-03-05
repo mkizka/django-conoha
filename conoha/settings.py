@@ -1,5 +1,5 @@
 INSTALLED_APPS = [
-    'conoha_django'
+    'conoha'
 ]
 
 DATABASES = {

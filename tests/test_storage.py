@@ -7,7 +7,7 @@ from django.test import TestCase
 import requests
 from requests.exceptions import HTTPError
 
-from conoha_django.storage.backend import ConohaObjectStorage
+from conoha.storage.backend import ConohaObjectStorage
 
 django.setup()
 
