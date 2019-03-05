@@ -15,7 +15,7 @@ def json_load(filepath, **kwargs):
 
 def load_credentials():
     access_file_path = load_settings('CONOHA_ACCESS_FILE_PATH')
-    if access_file_path:
+    if access_file_path is None:
         return load_settings('CONOHA_TENANT_ID'), load_settings('CONOHA_ACCESS_TOKEN_ID')
 
     access_token = json_load(access_file_path)['access']['token']
