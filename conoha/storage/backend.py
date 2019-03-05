@@ -46,3 +46,6 @@ class ConohaObjectStorage(Storage):
 
     def get_modified_time(self, name):
         return self.api.info(name, 'last_modified')
+
+    def generate_filename(self, filename):
+        return filename
