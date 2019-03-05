@@ -10,35 +10,35 @@ class ObjectStorageApi:
         self.tenant_id = self._credentials['access']['token']['tenant']['id']
         self.endpoint = f'https://object-storage.tyo1.conoha.io/v1/nc_{self.tenant_id}'
 
-    def _request(self, method, url, **kwargs):
+    def _request(self, method, name, **kwargs):
         headers = {
             'Accept': 'application/json',
-            'X-Auth-Token': self.token_id
+            'X-Auth-Token': self.token_id,
+            'X-Container-Read': '.r:*',
         }
-        response = requests.request(method, url, headers=headers, **kwargs)
-        try:
-            return response.json()
-        except:
-            raise Exception(f'{str(response.status_code)}: {response.text}')
+        return requests.request(method, f'{self.endpoint}/{name}', headers=headers, **kwargs)
 
     def get(self, name):
-        return self._request('get', f'{self.endpoint}/{name}')
+        return self._request('get', name)
+
+    def post(self, name):
+        return self._request('post', name)
 
     def put(self, name, f=None):
-        return self._request('put', f'{self.endpoint}/{name}', data=f)
+        return self._request('put', name, data=f)
 
     def delete(self, name):
-        return self._request('delete', f'{self.endpoint}/{name}')
+        return self._request('delete', name)
 
     def get_dir_info(self, name):
         """
         nameに対応するファイルが存在するコンテナの情報か、空白なら全コンテナを返す
         """
         if name == '':
-            return self.get('')
+            return self.get('').json()
 
         container, filename = get_container_and_filename(name)
-        return self.get(container)
+        return self.get(container).json()
 
     def get_path_info(self, name):
         """
@@ -47,13 +47,18 @@ class ObjectStorageApi:
         container, filename = get_container_and_filename(name)
 
         if filename:
-            data = self.get(container)
+            response = self.get(container)
             target = filename
         else:
-            data = self.get('')
+            response = self.get('')
             target = container
 
-        for obj in data:
+        try:
+            response_json = response.json()
+        except:
+            return None
+
+        for obj in response_json:
             if obj['name'] == target:
                 return obj
 

@@ -1,8 +1,9 @@
 import io
 
+from django.core.files import File
 from django.core.files.storage import Storage
 
-from .utils import get_container_and_filename, is_container
+from .utils import is_container
 from .api import ObjectStorageApi
 
 
@@ -10,11 +11,14 @@ class ConohaObjectStorage(Storage):
     def __init__(self):
         self.api = ObjectStorageApi()
 
-    def _open(self):
-        pass
+    def _open(self, name, mode='rb'):
+        response = self.api.get(name)
+        response.raise_for_status()
+        return File(io.BytesIO(response.content))
 
     def _save(self, name, content):
-        self.api.put(name, content)
+        response = self.api.put(name, content)
+        response.raise_for_status()
 
     def delete(self, name):
         self.api.delete(name)
@@ -38,7 +42,7 @@ class ConohaObjectStorage(Storage):
         return self.api.info(name, 'bytes')
 
     def url(self, name):
-        return self.api.endpoint + name
+        return self.api.endpoint + '/' + name
 
     def get_modified_time(self, name):
         return self.api.info(name, 'last_modified')
