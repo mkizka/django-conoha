@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-conoha',
-    version='0.0.1',
-    description='ConoHaオブジェクトストレージのカスタムストレージ',
+    version='0.1.0',
+    description='Conoha APIとDjangoを連携するアプリケーション',
     author='Compeito',
     author_email='com0806peito@icloud.com',
     url='https://github.com/Compeito/django-conoha',
